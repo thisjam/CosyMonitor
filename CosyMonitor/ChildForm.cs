@@ -190,23 +190,30 @@ namespace CosyMonitor
         /// <summary>
         /// 将字节数格式化为可读字符串（如 2.1 GB），支持 float 输入
         /// </summary>
-        private string FormatMemorySize(float bytes)
+        /// 
+        private string FormatMemorySize(float megabytes)
         {
-            if (bytes <= 0) return "0 B";
-
-            string[] units = { "B", "KB", "MB", "GB", "TB" };
-            double size = bytes;  // float → double（安全）
-            int unitIndex = 0;
-
-            while (size >= 1024 && unitIndex < units.Length - 1)
-            {
-                size /= 1024;
-                unitIndex++;
-            }
-
-            //return $"{size:F2} {units[unitIndex]}";
-            return $"{size:F2}";
+            if (megabytes <= 0) return "0.00";
+            return $"{(megabytes / 1024.0):F2}";
         }
+
+        //private string FormatMemorySize(float bytes)
+        //{
+        //    if (bytes <= 0) return "0 B";
+
+        //    string[] units = { "B", "KB", "MB", "GB", "TB" };
+        //    double size = bytes;  // float → double（安全）
+        //    int unitIndex = 0;
+
+        //    while (size >= 1024 && unitIndex < units.Length - 1)
+        //    {
+        //        size /= 1024;
+        //        unitIndex++;
+        //    }
+
+        //    //return $"{size:F2} {units[unitIndex]}";
+        //    return $"{size:F2}";
+        //}
 
         private void UpdateDisplay(
             float? cpuLoad, float? cpuTemp,
@@ -235,16 +242,18 @@ namespace CosyMonitor
             SetColor(lbMemoryM, memoryLoad, 80);
             SetColor(lbMemoryT, memoryTemp, 80);
 
-            // === 新增：GPU 显存显示 ===
+            // === 新增：GPU 显存显示 ===原始数据单位是MB
             if (gpuMemoryTotal.HasValue)
             {
-                string total = FormatMemorySize(gpuMemoryTotal.Value * 1024 * 1024); // 转为字节再格式化
+                string total = FormatMemorySize(gpuMemoryTotal.Value); // 转为字节再格式化
+                //string total = FormatMemorySize(gpuMemoryTotal.Value * 1024 * 1024); // 转为字节再格式化
                
                 lbGpuRamTotal.Text = $"/ {total}GB";
 
                 if (gpuMemoryUsed.HasValue)
                 {
-                    string used = FormatMemorySize(gpuMemoryUsed.Value * 1024 * 1024);
+                    //string used = FormatMemorySize(gpuMemoryUsed.Value * 1024 * 1024);
+                    string used = FormatMemorySize(gpuMemoryUsed.Value);
                     lbGpuRam.Text = used;
                 }
                 else
