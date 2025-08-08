@@ -152,6 +152,7 @@ namespace CosyMonitor
             StartPosition = FormStartPosition.Manual;
             Location = new Point(x, y);
             Size = new Size(500, 50);
+            //Size = new Size(500, 500);
             this.MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) { this.Capture = false; Message m = Message.Create(this.Handle, 0XA1, new IntPtr(2), IntPtr.Zero); this.WndProc(ref m); } };
 
 

@@ -29,8 +29,9 @@ namespace CosyMonitor
         {
             this.ShowInTaskbar = false;
             this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = Color.Black;
-            this.TransparencyKey = Color.Black;
+            //this.BackColor = Color.Black;
+            this.BackColor = Color.FromArgb(1, 1, 1);
+            //this.TransparencyKey = Color.Black;
 
             //this.TransparencyKey = Color.FromArgb(1, 1, 1);
 
@@ -59,6 +60,9 @@ namespace CosyMonitor
             lbGpuM.ForeColor = color;
             lbGpuT.ForeColor = color;
 
+            lbGpuRam.ForeColor = color;
+            lbGpuRamTotal.ForeColor = color;
+
             lbMemoryTips.ForeColor = color;
             lbMemoryTips.Font = new Font("微软雅黑", 9f, FontStyle.Regular, GraphicsUnit.Point);
             lbMemoryM.ForeColor = color;
@@ -80,6 +84,8 @@ namespace CosyMonitor
             float? cpuLoad = null, cpuTemp = null;
             float? gpuLoad = null, gpuTemp = null;
             float? memoryLoad = null, memoryTemp = null;
+            float? gpuMemoryUsed = null;
+            float? gpuMemoryTotal = null;
 
             foreach (var hardware in _computer.Hardware)
             {
@@ -120,6 +126,16 @@ namespace CosyMonitor
                             if (sensor.SensorType == SensorType.Temperature &&
                                 sensor.Name.Contains("GPU"))
                                 gpuTemp = sensor.Value;
+
+                            if (sensor.SensorType == SensorType.SmallData || sensor.SensorType == SensorType.Data)
+                            {
+                                if (sensor.Name.Contains("Memory Used", StringComparison.OrdinalIgnoreCase))
+                                    gpuMemoryUsed = sensor.Value; // 单位：MB
+
+                                if (sensor.Name.Contains("Memory Total", StringComparison.OrdinalIgnoreCase) ||
+                                    sensor.Name.Contains("VRAM Size", StringComparison.OrdinalIgnoreCase))
+                                    gpuMemoryTotal = sensor.Value; // 单位：MB
+                            }
                         }
                         break;
 
@@ -143,13 +159,14 @@ namespace CosyMonitor
                                 memoryLoad = sensor.Value;
                             }
 
-                            //if (sensor.SensorType == SensorType.Temperature &&
-                            //    sensor.Name.Contains("Memory", StringComparison.OrdinalIgnoreCase))
-                            //    memoryTemp = sensor.Value;
-                            if(sensor.SensorType == SensorType.Temperature)
-                            {
+                            if (sensor.SensorType == SensorType.Temperature &&
+                                sensor.Name.Contains("Memory", StringComparison.OrdinalIgnoreCase))
+                                memoryTemp = sensor.Value;
 
-                            }
+                            //if(sensor.SensorType == SensorType.Temperature)
+                            //{
+
+                            //}
 
                         }
                         break;
@@ -159,19 +176,44 @@ namespace CosyMonitor
             // 更新 UI（跨线程安全）
             if (this.InvokeRequired)
             {
-                this.Invoke(new Action(() => UpdateDisplay(
-                    cpuLoad, cpuTemp, gpuLoad, gpuTemp, memoryLoad, memoryTemp)));
+                //this.Invoke(new Action(() => UpdateDisplay(cpuLoad, cpuTemp, gpuLoad, gpuTemp, memoryLoad, memoryTemp )));
+                this.Invoke(new Action(() => UpdateDisplay(cpuLoad, cpuTemp, gpuLoad, gpuTemp, memoryLoad, memoryTemp, gpuMemoryUsed, gpuMemoryTotal)));
             }
             else
             {
-                UpdateDisplay(cpuLoad, cpuTemp, gpuLoad, gpuTemp, memoryLoad, memoryTemp);
+                UpdateDisplay(cpuLoad, cpuTemp, gpuLoad, gpuTemp, memoryLoad, memoryTemp, gpuMemoryUsed, gpuMemoryTotal);
+                //UpdateDisplay(cpuLoad, cpuTemp, gpuLoad, gpuTemp, memoryLoad, memoryTemp );
             }
+        }
+
+
+        /// <summary>
+        /// 将字节数格式化为可读字符串（如 2.1 GB），支持 float 输入
+        /// </summary>
+        private string FormatMemorySize(float bytes)
+        {
+            if (bytes <= 0) return "0 B";
+
+            string[] units = { "B", "KB", "MB", "GB", "TB" };
+            double size = bytes;  // float → double（安全）
+            int unitIndex = 0;
+
+            while (size >= 1024 && unitIndex < units.Length - 1)
+            {
+                size /= 1024;
+                unitIndex++;
+            }
+
+            //return $"{size:F2} {units[unitIndex]}";
+            return $"{size:F2}";
         }
 
         private void UpdateDisplay(
             float? cpuLoad, float? cpuTemp,
             float? gpuLoad, float? gpuTemp,
-            float? memoryLoad, float? memoryTemp)
+            float? memoryLoad, float? memoryTemp,
+            float? gpuMemoryUsed, float? gpuMemoryTotal
+            )
         {
             // CPU
             lbCpuM.Text = $"{cpuLoad?.ToString("F1") ?? "N/A"}%";
@@ -182,6 +224,8 @@ namespace CosyMonitor
             // GPU
             lbGpuM.Text = $"{gpuLoad?.ToString("F1") ?? "N/A"}%";
             lbGpuT.Text = $"{gpuTemp?.ToString("F1") ?? "N/A"}°C";
+      
+          
             SetColor(lbGpuM, gpuLoad, 80);
             SetColor(lbGpuT, gpuTemp, 80);
 
@@ -190,6 +234,46 @@ namespace CosyMonitor
             lbMemoryT.Text = $"{memoryTemp?.ToString("F1") ?? "N/A"}°C";
             SetColor(lbMemoryM, memoryLoad, 80);
             SetColor(lbMemoryT, memoryTemp, 80);
+
+            // === 新增：GPU 显存显示 ===
+            if (gpuMemoryTotal.HasValue)
+            {
+                string total = FormatMemorySize(gpuMemoryTotal.Value * 1024 * 1024); // 转为字节再格式化
+               
+                lbGpuRamTotal.Text = $"/ {total}GB";
+
+                if (gpuMemoryUsed.HasValue)
+                {
+                    string used = FormatMemorySize(gpuMemoryUsed.Value * 1024 * 1024);
+                    lbGpuRam.Text = used;
+                }
+                else
+                {
+                    lbGpuRam.Text = $"?";
+                }
+            }
+            else
+            {
+                lbGpuRam.Text = "?";
+            }
+
+            // 可选：根据使用率变色
+            if (gpuMemoryUsed.HasValue && gpuMemoryTotal.HasValue)
+            {
+                float usagePercent = (gpuMemoryUsed.Value / gpuMemoryTotal.Value) * 100;
+                if (usagePercent >= 80)
+                {
+                    lbGpuRam.ForeColor = Color.Red;
+                }
+                else
+                {
+                    lbGpuRam.ForeColor = Color.White;
+                }
+         
+            }
+
+          
+
         }
 
         private void SetColor(Label label, float? value, float threshold)

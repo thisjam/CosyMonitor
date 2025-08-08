@@ -37,12 +37,14 @@
             lbCpuT = new Label();
             lbCpuTips = new Label();
             lbCpuM = new Label();
+            lbGpuRam = new Label();
+            lbGpuRamTotal = new Label();
             SuspendLayout();
             // 
             // lbMemoryT
             // 
             lbMemoryT.AutoSize = true;
-            lbMemoryT.Location = new Point(392, 19);
+            lbMemoryT.Location = new Point(446, 19);
             lbMemoryT.Name = "lbMemoryT";
             lbMemoryT.Size = new Size(43, 17);
             lbMemoryT.TabIndex = 17;
@@ -51,7 +53,7 @@
             // lbMemoryTips
             // 
             lbMemoryTips.AutoSize = true;
-            lbMemoryTips.Location = new Point(307, 19);
+            lbMemoryTips.Location = new Point(347, 19);
             lbMemoryTips.Name = "lbMemoryTips";
             lbMemoryTips.Size = new Size(44, 17);
             lbMemoryTips.TabIndex = 16;
@@ -60,7 +62,7 @@
             // lbMemoryM
             // 
             lbMemoryM.AutoSize = true;
-            lbMemoryM.Location = new Point(353, 19);
+            lbMemoryM.Location = new Point(397, 19);
             lbMemoryM.Name = "lbMemoryM";
             lbMemoryM.Size = new Size(43, 17);
             lbMemoryM.TabIndex = 15;
@@ -69,7 +71,7 @@
             // lbGpuT
             // 
             lbGpuT.AutoSize = true;
-            lbGpuT.Location = new Point(256, 19);
+            lbGpuT.Location = new Point(297, 19);
             lbGpuT.Name = "lbGpuT";
             lbGpuT.Size = new Size(43, 17);
             lbGpuT.TabIndex = 14;
@@ -87,7 +89,7 @@
             // lbGpuM
             // 
             lbGpuM.AutoSize = true;
-            lbGpuM.Location = new Point(218, 19);
+            lbGpuM.Location = new Point(206, 154);
             lbGpuM.Name = "lbGpuM";
             lbGpuM.Size = new Size(43, 17);
             lbGpuM.TabIndex = 12;
@@ -121,11 +123,31 @@
             lbCpuM.TabIndex = 9;
             lbCpuM.Text = "label1";
             // 
+            // lbGpuRam
+            // 
+            lbGpuRam.AutoSize = true;
+            lbGpuRam.Location = new Point(199, 19);
+            lbGpuRam.Name = "lbGpuRam";
+            lbGpuRam.Size = new Size(22, 17);
+            lbGpuRam.TabIndex = 18;
+            lbGpuRam.Text = "10";
+            // 
+            // lbGpuRamTotal
+            // 
+            lbGpuRamTotal.AutoSize = true;
+            lbGpuRamTotal.Location = new Point(227, 19);
+            lbGpuRamTotal.Name = "lbGpuRamTotal";
+            lbGpuRamTotal.Size = new Size(22, 17);
+            lbGpuRamTotal.TabIndex = 19;
+            lbGpuRamTotal.Text = "24";
+            // 
             // ChildForm
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(520, 214);
+            ClientSize = new Size(697, 214);
+            Controls.Add(lbGpuRamTotal);
+            Controls.Add(lbGpuRam);
             Controls.Add(lbMemoryT);
             Controls.Add(lbMemoryTips);
             Controls.Add(lbMemoryM);
@@ -153,5 +175,7 @@
         private Label lbCpuT;
         private Label lbCpuTips;
         private Label lbCpuM;
+        private Label lbGpuRam;
+        private Label lbGpuRamTotal;
     }
 }
